@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class SecurityConfig {
 
+
     private UserDetailsService userDetailsService;
 
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
@@ -28,23 +29,20 @@ public class SecurityConfig {
     private JwtAuthenticationFilter authenticationFilter;
 
     @Bean
-    public static PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/api/auth/**").permitAll();
-                    authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-                    authorize.anyRequest().authenticated();
-                }).httpBasic(Customizer.withDefaults());
+            .authorizeHttpRequests(authorize -> {
+                authorize.requestMatchers("/api/auth/**").permitAll(); // Permitir acceso sin autenticación
+                authorize.anyRequest().authenticated(); // Requiere autenticación para otros endpoints
+            })
+            .httpBasic(Customizer.withDefaults());
 
-        http.exceptionHandling( exception -> exception
-                .authenticationEntryPoint(authenticationEntryPoint));
-
+        http.exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint));
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

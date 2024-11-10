@@ -19,10 +19,8 @@ public class JwtTokenProvider {
     private long jwtExpirationDate = 3600000; //1h = 3600s and 3600*1000 = 3600000 milliseconds
 
     public String generateToken(Authentication authentication) {
-
         String username = authentication.getName();
         Date currentDate = new Date();
-
         Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
 
         String token = Jwts.builder()
@@ -32,6 +30,7 @@ public class JwtTokenProvider {
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
 
+        System.out.println("Token generado para el usuario: " + username);
         return token;
     }
 

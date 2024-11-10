@@ -15,23 +15,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+    
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @Override
     public String login(LoginDto loginDto) {
-        // 01 - AuthenticationManager is used to authenticate the user
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getUsername(),
-                loginDto.getPassword()
-        ));
+        try {
+            System.out.println("Intentando autenticación para usuario: " + loginDto.getUsername());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDto.getUsername(),
+                            loginDto.getPassword()
+                    )
+            );
 
-        // 03 - Generate the token based on username and secret key
-        String token = jwtTokenProvider.generateToken(authentication);
+            System.out.println("Usuario autenticado: " + authentication.getName());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 04 - Return the token to controller
-        return token;
+            return jwtTokenProvider.generateToken(authentication);
+        } catch (Exception e) {
+            System.out.println("Error en la autenticación: " + e.getMessage());
+            throw e;
+        }
     }
 }
