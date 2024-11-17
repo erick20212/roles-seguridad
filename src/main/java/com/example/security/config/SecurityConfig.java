@@ -1,9 +1,7 @@
 package com.example.security.config;
 
-
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -21,11 +19,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class SecurityConfig {
 
-
     private UserDetailsService userDetailsService;
-
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
-
     private JwtAuthenticationFilter authenticationFilter;
 
     @Bean
@@ -37,7 +32,25 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> {
-                authorize.requestMatchers("/api/auth/**").permitAll(); // Permitir acceso sin autenticación
+                authorize.requestMatchers(
+                        "/api/auth/**", 
+                        "/api/persona/**", 
+                        "/api/estudiante/**", 
+                        "/api/empresa/**", 
+                        "/api/usuario/**",
+                        "/api/rol_acceso/**",
+                        "/api/role/**", 
+                        "/api/acceso/**",
+                        "/api/usuario_role/**",
+                        "/api/linea/**",
+                        "/api/solicitud**",
+                        "/api/solicitud/inicial**",
+                        "/api/representante/**"
+                        
+                   
+                        
+                  
+                ).permitAll(); // Permitir acceso sin autenticación a estas rutas
                 authorize.anyRequest().authenticated(); // Requiere autenticación para otros endpoints
             })
             .httpBasic(Customizer.withDefaults());

@@ -21,8 +21,7 @@ import java.util.Set;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
-
-    @Autowired
+	@Autowired
     private AuthService authService;
 
     @Autowired
@@ -36,41 +35,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
-        String token = authService.login(loginDto); // Obtener el token desde AuthService
-
-        // Buscar usuario por nombre de usuario
+        String token = authService.login(loginDto);
         Usuario usuario = usuarioRepository.findByUsername(loginDto.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Obtener el primer rol del usuario (asumiendo que tiene al menos uno)
-        String role = usuario.getRoles().stream().findFirst().map(Rol::getName).orElse("USER");
+        // Obteniendo el primer rol del usuario a través de usuarioRoles
+        String role = usuario.getUsuarioRoles().stream()
+                .map(usuarioRol -> usuarioRol.getRol().getName())
+                .findFirst()
+                .orElse("USER");
 
-        // Configurar la respuesta de autenticación
-        AuthResponseDto authResponseDto = new AuthResponseDto();
-        authResponseDto.setAccessToken(token); // Token
-        authResponseDto.setWelcomeMessage("Hola " + role); // Mensaje personalizado
-        authResponseDto.setUsername(usuario.getUsername()); // Nombre de usuario
-        authResponseDto.setRole(role); // Rol
-
-        // Retornar la respuesta con el token, mensaje, nombre y rol
+        AuthResponseDto authResponseDto = new AuthResponseDto(token, "Hola " + role, usuario.getUsername(), role);
         return new ResponseEntity<>(authResponseDto, HttpStatus.OK);
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegisterDto registerDto) {
-        Usuario usuario = new Usuario();
-        usuario.setName(registerDto.getName());
-        usuario.setUsername(registerDto.getUsername());
-        usuario.setEmail(registerDto.getEmail());
-        usuario.setPassword(passwordEncoder.encode(registerDto.getPassword())); // Codificar la contraseña
-
-        Set<Rol> roles = new HashSet<>();
-        Rol userRole = rolRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Error: Rol USER no encontrado"));
-        roles.add(userRole);
-        usuario.setRoles(roles); // Asignar rol
-
-        usuarioRepository.save(usuario); // Guardar usuario
-        return new ResponseEntity<>("Usuario registrado exitosamente", HttpStatus.CREATED);
     }
 }

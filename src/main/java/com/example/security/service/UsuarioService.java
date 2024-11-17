@@ -1,0 +1,14 @@
+package com.example.security.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import com.example.security.entity.Usuario;
+
+public interface UsuarioService {
+	Usuario create(Usuario a);
+	Usuario update(Usuario a);
+    void delete(Long id);
+    Optional<Usuario> read(Long id);
+    List<Usuario> readAll();
+}
