@@ -46,4 +46,8 @@ public class Plan_Carrera {
     @OneToMany(mappedBy = "plan_carrera", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<PPP> ppps;
+
+    @OneToMany(mappedBy = "plan_carrera", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<detalle_ppp> detallePpps;
 }

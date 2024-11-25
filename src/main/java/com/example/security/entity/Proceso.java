@@ -30,4 +30,8 @@ public class Proceso {
     @OneToMany(mappedBy = "proceso", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Proceso_Requisito> procesoRequisitos;
+
+    @OneToMany(mappedBy = "proceso", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<detalle_ppp> detallePpps;
 }

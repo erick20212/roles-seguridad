@@ -27,4 +27,8 @@ public class Rubro {
     @JsonIgnore
     private List<Detalle_evaluacion> detalleEvaluacions;
 
+    @OneToMany(mappedBy = "rubro", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Evaluacion> evaluacions;
+
 }

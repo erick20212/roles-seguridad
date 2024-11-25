@@ -29,4 +29,7 @@ public class Requisito {
     @JsonIgnore
     private List<Proceso_Requisito> procesoRequisitos;
 
+    @OneToMany(mappedBy = "requisito", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<detalle_ppp> detallePpps;
 }

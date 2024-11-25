@@ -1,5 +1,6 @@
 package com.example.security.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.sound.sampled.Line;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -51,4 +53,12 @@ public class PPP {
     @ManyToOne
     @JoinColumn(name = "id_matricula", referencedColumnName = "id_matricula", nullable = false)
     private Matricula matricula;
+
+    @OneToMany(mappedBy = "ppp", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Evaluacion> evaluacions;
+
+    @OneToMany(mappedBy = "ppp", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<detalle_ppp> detallePpps;
 }

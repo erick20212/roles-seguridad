@@ -38,4 +38,8 @@ public class Persona {
     @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL)
     @JsonIgnore
     private Usuario usuarios;
+
+    @OneToMany(mappedBy = "persona", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<detalle_ppp> detallePpps;
 }
