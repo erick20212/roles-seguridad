@@ -46,7 +46,12 @@ public class SecurityConfig {
                         "/api/usuario_role/**",
                         "/api/linea/**",
                         "/api/empresa-linea**",
-                        "/api/representante/**"
+                        "/api/representante/**",
+                        "/api/supervisores/**",
+                        "/api/solicitud/**",
+                 
+                        "/api/persona-usuario/**",
+                        "/api/supervisores/**"
                 ).permitAll();
 
                 // Rutas protegidas
