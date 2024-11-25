@@ -7,12 +7,12 @@ import com.example.security.entity.Usuario;
 import com.example.security.entity.Usuario_Rol;
 import com.example.security.repository.PersonaRepository;
 import com.example.security.repository.UsuarioRepository;
-import com.example.security.repository.RolRepository; // Asegúrate de tener este repositorio
-import com.example.security.repository.Usuario_Rol_Repository; // Asegúrate de tener este repositorio
-import jakarta.transaction.Transactional;
+import com.example.security.repository.RolRepository;
+import com.example.security.repository.Usuario_Rol_Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 @Service
 public class PersonaUsuarioService {
@@ -24,13 +24,13 @@ public class PersonaUsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private RolRepository rolRepository;  // Repositorio para obtener el rol
+    private RolRepository rolRepository;
 
     @Autowired
-    private Usuario_Rol_Repository usuarioRolRepository;  // Repositorio para guardar Usuario_Rol
+    private Usuario_Rol_Repository usuarioRolRepository;
 
     @Autowired
-    private PasswordEncoder encode;  // Inyección del BCryptPasswordEncoder
+    private PasswordEncoder encode;
 
     /**
      * Método para crear una persona y un usuario asociado.
@@ -39,21 +39,32 @@ public class PersonaUsuarioService {
      */
     @Transactional
     public void crearPersonaYUsuario(PersonaUsuarioDTO personaUsuarioDTO) {
-        // Validar si el email ya existe en la tabla persona
+        if (personaUsuarioDTO.getNombre() == null || personaUsuarioDTO.getNombre().isEmpty()) {
+            throw new RuntimeException("El nombre es obligatorio");
+        }
+
+        if (personaUsuarioDTO.getApellido() == null || personaUsuarioDTO.getApellido().isEmpty()) {
+            throw new RuntimeException("El apellido es obligatorio");
+        }
         if (personaRepository.existsByEmail(personaUsuarioDTO.getEmailPersona())) {
             throw new RuntimeException("El correo electrónico ya está registrado.");
         }
 
-        // Validar si el username ya existe en la tabla usuario
-        if (usuarioRepository.existsByUsername(personaUsuarioDTO.getUsername())) {
+        // Validar si el nombre de usuario ya existe en la tabla usuario
+        if (usuarioRepository.existsByUsername(personaUsuarioDTO.getNombre())) {
             throw new RuntimeException("El nombre de usuario ya está registrado.");
         }
+
+        if (!personaUsuarioDTO.getDni().matches("\\d{8}")) {
+            throw new RuntimeException("El DNI debe contener 8 dígitos.");
+        }
+
 
         // Crear la Persona
         Persona persona = new Persona();
         persona.setNombre(personaUsuarioDTO.getNombre());
         persona.setApellido(personaUsuarioDTO.getApellido());
-        persona.setEmail(personaUsuarioDTO.getEmailPersona());
+        persona.setEmail(personaUsuarioDTO.getEmailPersona()); // Usar el email de la persona
         persona.setDni(personaUsuarioDTO.getDni());
         persona.setEstado("activo"); // Estado por defecto
 
@@ -62,20 +73,20 @@ public class PersonaUsuarioService {
 
         // Crear el Usuario
         Usuario usuario = new Usuario();
-        usuario.setUsername(personaUsuarioDTO.getUsername());  // Usar el username del DTO
-        usuario.setEmail(personaGuardada.getEmail());  // Email vinculado a la persona
+        usuario.setUsername(personaUsuarioDTO.getNombre());  // Usar el nombre de la persona
+        usuario.setLogin(personaUsuarioDTO.getNombre() + " " + personaUsuarioDTO.getApellido());  // Concatenar nombre y apellido
         String dniEncriptado = encode.encode(personaGuardada.getDni());  // Encriptar el DNI
         usuario.setPassword(dniEncriptado);  // Password es el DNI encriptado
-        usuario.setLogin(personaUsuarioDTO.getLogin());  // Login del DTO
-        usuario.setImg("text.png");  // Imagen fija
+        usuario.setEmail(personaGuardada.getEmail());  // Email de la persona
+        usuario.setImg("text.png");  // Imagen predeterminada
         usuario.setEstado("activo");  // Estado por defecto
         usuario.setPersona(personaGuardada);  // Asociar Persona con Usuario
 
         // Guardar Usuario
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        // Obtener el rol de supervisor (puedes cambiar el ID según tu base de datos)
-        Rol rolSupervisor = rolRepository.findById(28L).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        // Obtener el rol de supervisor (ID 2, puedes cambiarlo según tu base de datos)
+        Rol rolSupervisor = rolRepository.findById(2L).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         // Crear la relación Usuario_Rol
         Usuario_Rol usuarioRol = new Usuario_Rol();

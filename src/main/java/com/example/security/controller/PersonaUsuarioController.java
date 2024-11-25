@@ -25,6 +25,7 @@ public class PersonaUsuarioController {
      */
     @PostMapping("/crear")
     public ResponseEntity<String> crearPersonaYUsuario(@Valid @RequestBody PersonaUsuarioDTO personaUsuarioDTO) {
+        System.out.println("Datos recibidos: " + personaUsuarioDTO);
         try {
             personaUsuarioService.crearPersonaYUsuario(personaUsuarioDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Persona y usuario creados con éxito.");

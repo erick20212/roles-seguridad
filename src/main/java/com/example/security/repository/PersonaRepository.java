@@ -7,6 +7,7 @@ import com.example.security.entity.Persona;
 
 @Repository
 public interface PersonaRepository extends JpaRepository<Persona, Long>{
-	boolean existsByEmail(String email);
     boolean existsByDni(String dni);
+    boolean existsByEmail(String email);
+
 }

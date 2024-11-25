@@ -34,7 +34,7 @@ public class SupervisorController {
     @GetMapping("/listar")
     public List<Persona> listarSupervisores() {
         // 1. Buscar los usuarios que tienen el rol de supervisor (id_rol = 4)
-        List<Usuario_Rol> usuarioRoles = usuarioRolRepository.findByRolId(28L);  // Busca por el id_rol del supervisor
+        List<Usuario_Rol> usuarioRoles = usuarioRolRepository.findByRolId(2L);  // Busca por el id_rol del supervisor
 
         // 2. Obtener los usuarios y sus personas asociadas
         List<Persona> supervisores = usuarioRoles.stream()
@@ -68,7 +68,7 @@ public class SupervisorController {
     public ResponseEntity<String> borrarSupervisor(@PathVariable Long id) {
         try {
             // Verificar si la persona está asociada a un supervisor (rol con id_rol = 4)
-            List<Usuario_Rol> usuarioRoles = usuarioRolRepository.findByRolId(28L);
+            List<Usuario_Rol> usuarioRoles = usuarioRolRepository.findByRolId(2L);
 
             // Buscar la relación Usuario_Rol asociada a la persona con el ID dado
             Usuario_Rol usuarioRol = usuarioRoles.stream()

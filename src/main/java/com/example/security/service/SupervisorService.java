@@ -40,7 +40,7 @@ public class SupervisorService {
         }
 
         // Buscar la relación Usuario_Rol asociada al supervisor (id_rol = 4)
-        Usuario_Rol usuarioRol = usuarioRolRepository.findByUsuario_Persona_IdAndRol_Id(id, 28L)
+        Usuario_Rol usuarioRol = usuarioRolRepository.findByUsuario_Persona_IdAndRol_Id(id, 2L)
                 .orElseThrow(() -> new RuntimeException("El usuario no es un supervisor o no existe"));
 
         // Obtener la Persona y el Usuario asociados
