@@ -5,8 +5,9 @@ import java.util.List;
 import com.example.security.dto.SolicitudDto;
 
 public interface SolicitudService {
-	SolicitudDto getDatosIniciales();
-	void saveSolicitud(SolicitudDto solicitudDTO);
-	List<SolicitudDto> listarSolicitudes();
+	 SolicitudDto obtenerDatosEstudianteConEmpresasYLineas();
+	    void guardarSolicitud(SolicitudDto solicitudDTO);
+	    List<SolicitudDto> listarSolicitudes();
+	    List<SolicitudDto> listarSolicitudesPorEstudiante(Long estudianteId); // Nueva funcionalidad
 }
     

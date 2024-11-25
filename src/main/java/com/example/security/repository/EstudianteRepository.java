@@ -9,6 +9,9 @@ import com.example.security.entity.Estudiante;
 
 @Repository
 public interface EstudianteRepository extends JpaRepository<Estudiante,Long>{
-	Optional<Estudiante> findByPersonaId(Long personaId);
-	  Optional<Estudiante> findByCodigo(String codigo);
+	 // Buscar un estudiante por el ID de la persona asociada
+    Optional<Estudiante> findByPersonaId(Long personaId);
+
+    // Buscar un estudiante por su código único
+    Optional<Estudiante> findByCodigo(String codigo);
 }

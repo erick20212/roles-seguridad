@@ -30,8 +30,10 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable()) // Deshabilitar CSRF si no es necesario
+            .cors(Customizer.withDefaults()) // Habilitar soporte para CORS
             .authorizeHttpRequests(authorize -> {
+                // Rutas públicas
                 authorize.requestMatchers(
                         "/api/auth/**", 
                         "/api/persona/**", 
@@ -43,19 +45,25 @@ public class SecurityConfig {
                         "/api/acceso/**",
                         "/api/usuario_role/**",
                         "/api/linea/**",
-                        "/api/solicitud**",
-                        "/api/solicitud/inicial**",
+                        "/api/empresa-linea**",
                         "/api/representante/**"
-                        
-                   
-                        
-                  
-                ).permitAll(); // Permitir acceso sin autenticación a estas rutas
-                authorize.anyRequest().authenticated(); // Requiere autenticación para otros endpoints
-            })
-            .httpBasic(Customizer.withDefaults());
+                ).permitAll();
 
+                // Rutas protegidas
+                authorize.requestMatchers(
+                        "/api/solicitudes/**",
+                        "/api/solicitudes/list**" // Proteger solicitudes
+                ).authenticated();
+
+                // Todas las demás rutas requieren autenticación
+                authorize.anyRequest().authenticated();
+            })
+            .httpBasic(Customizer.withDefaults()); // Usar autenticación básica
+
+        // Configuración de manejo de excepciones
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint));
+
+        // Agregar filtro JWT
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

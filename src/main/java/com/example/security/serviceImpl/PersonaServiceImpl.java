@@ -13,55 +13,54 @@ import com.example.security.service.PersonaService;
 @Service
 public class PersonaServiceImpl implements PersonaService {
 
-    @Autowired
-    private PersonaRepository repository;
+	 @Autowired
+	    private PersonaRepository repository;
 
-    @Override
-    public Persona create(Persona persona) {
-        return repository.save(persona);
-    }
+	    @Override
+	    public Persona create(Persona persona) {
+	        return repository.save(persona);
+	    }
 
-    @Override
-    public Persona update(Persona persona) {
-        // Cargar la entidad existente desde la base de datos
-        Optional<Persona> existingPersonaOpt = repository.findById(persona.getId());
+	    @Override
+	    public Persona update(Persona persona) {
+	        // Cargar la entidad existente desde la base de datos
+	        Optional<Persona> existingPersonaOpt = repository.findById(persona.getId());
 
-        if (existingPersonaOpt.isPresent()) {
-            Persona existingPersona = existingPersonaOpt.get();
+	        if (existingPersonaOpt.isPresent()) {
+	            Persona existingPersona = existingPersonaOpt.get();
 
-            // Actualizar solo los campos necesarios en la entidad existente
-            existingPersona.setNombre(persona.getNombre());
-            existingPersona.setApellido(persona.getApellido());
-            existingPersona.setEmail(persona.getEmail());
-            existingPersona.setDni(persona.getDni());
-            existingPersona.setEstado(persona.getEstado());
+	            // Actualizar solo los campos necesarios en la entidad existente
+	            existingPersona.setNombre(persona.getNombre());
+	            existingPersona.setApellido(persona.getApellido());
+	            existingPersona.setEmail(persona.getEmail());
+	            existingPersona.setDni(persona.getDni());
+	            existingPersona.setEstado(persona.getEstado());
 
-            // Actualizar la colección de usuarios si es necesario
-            if (persona.getUsuarios() != null) {
-                existingPersona.getUsuarios().clear();
-                existingPersona.getUsuarios().addAll(persona.getUsuarios());
-            }
+	            // Actualizar el usuario asociado si es necesario
+	            if (persona.getUsuarios() != null) {
+	                existingPersona.setUsuarios(persona.getUsuarios());
+	            }
 
-            // Guardar la entidad actualizada en la base de datos
-            return repository.save(existingPersona);
-        } else {
-            // Si no se encuentra la persona, puede manejarse como se prefiera, aquí lanzamos una excepción
-            throw new RuntimeException("Persona no encontrada con ID: " + persona.getId());
-        }
-    }
+	            // Guardar la entidad actualizada en la base de datos
+	            return repository.save(existingPersona);
+	        } else {
+	            // Si no se encuentra la persona, puedes manejarlo como prefieras; aquí lanzamos una excepción
+	            throw new RuntimeException("Persona no encontrada con ID: " + persona.getId());
+	        }
+	    }
 
-    @Override
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
+	    @Override
+	    public void delete(Long id) {
+	        repository.deleteById(id);
+	    }
 
-    @Override
-    public Optional<Persona> read(Long id) {
-        return repository.findById(id);
-    }
+	    @Override
+	    public Optional<Persona> read(Long id) {
+	        return repository.findById(id);
+	    }
 
-    @Override
-    public List<Persona> readAll() {
-        return repository.findAll();
-    }
-}
+	    @Override
+	    public List<Persona> readAll() {
+	        return repository.findAll();
+	    }
+	}

@@ -4,15 +4,20 @@ import com.example.security.dto.SolicitudDto;
 import com.example.security.entity.*;
 import com.example.security.repository.*;
 import com.example.security.service.SolicitudService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class SolicitudServiceImpl implements SolicitudService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SolicitudServiceImpl.class);
 
     @Autowired
     private SolicitudRepository solicitudRepository;
@@ -26,90 +31,154 @@ public class SolicitudServiceImpl implements SolicitudService {
     @Autowired
     private LineaRepository lineaRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @Override
-    public SolicitudDto getDatosIniciales() {
-        SolicitudDto datosIniciales = new SolicitudDto();
+    public SolicitudDto obtenerDatosEstudianteConEmpresasYLineas() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        logger.info("Usuario autenticado: {}", username);
 
-        datosIniciales.setEmpresas(
-                empresaRepository.findAll().stream().map(empresa -> {
-                    SolicitudDto.EmpresaDTO dto = new SolicitudDto.EmpresaDTO();
-                    dto.setId(empresa.getId());
-                    dto.setRazonSocial(empresa.getRazonSocial());
-                    return dto;
-                }).collect(Collectors.toList())
-        );
+        // Buscar usuario por su nombre de usuario (username)
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-        datosIniciales.setLineasCarrera(
-                lineaRepository.findAll().stream().map(linea -> {
-                    SolicitudDto.LineaCarreraDTO dto = new SolicitudDto.LineaCarreraDTO();
-                    dto.setId(linea.getId());
-                    dto.setNombre(linea.getNombre());
-                    return dto;
-                }).collect(Collectors.toList())
-        );
+        // Obtener la persona asociada al usuario
+        Persona persona = usuario.getPersona();
+        if (persona == null) {
+            throw new RuntimeException("Persona no asociada al usuario: " + username);
+        }
 
-        return datosIniciales;
+        // Buscar el estudiante asociado a la persona
+        Estudiante estudiante = estudianteRepository.findByPersonaId(persona.getId())
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado para persona: " + persona.getId()));
+
+        // Mapear datos del estudiante a DTO
+        SolicitudDto.EstudianteDTO estudianteDto = new SolicitudDto.EstudianteDTO();
+        estudianteDto.setNombre(persona.getNombre());
+        estudianteDto.setApellido(persona.getApellido());
+        estudianteDto.setCodigo(estudiante.getCodigo());
+        estudianteDto.setDni(persona.getDni());
+        estudianteDto.setTelefono(persona.getTelefono());
+        estudianteDto.setCorreo(persona.getEmail());
+
+        // Crear DTO de Solicitud
+        SolicitudDto solicitudDto = new SolicitudDto();
+        solicitudDto.setEstudiante(estudianteDto);
+        solicitudDto.setEstado("activo");
+
+        // Asignar lista de empresas al DTO
+        List<SolicitudDto.EmpresaDTO> empresas = empresaRepository.findAll().stream()
+                .map(this::convertirEmpresaADto)
+                .collect(Collectors.toList());
+        solicitudDto.setEmpresas(empresas);
+
+        // Asignar lista de líneas de carrera al DTO
+        List<SolicitudDto.LineaCarreraDTO> lineasCarrera = lineaRepository.findAll().stream()
+                .map(this::convertirLineaADto)
+                .collect(Collectors.toList());
+        solicitudDto.setLineasCarrera(lineasCarrera);
+
+        return solicitudDto;
     }
 
     @Override
-    public void saveSolicitud(SolicitudDto solicitudDTO) {
+    public void guardarSolicitud(SolicitudDto solicitudDTO) {
+    	logger.info("Guardando nueva solicitud...");
+
+        // Crear entidad de Solicitud
         Solicitud solicitud = new Solicitud();
 
+        // Validar y asignar estudiante
         Estudiante estudiante = estudianteRepository.findByCodigo(solicitudDTO.getEstudiante().getCodigo())
-                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado con el código: " + solicitudDTO.getEstudiante().getCodigo()));
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado: " + solicitudDTO.getEstudiante().getCodigo()));
         solicitud.setEstudiante(estudiante);
 
-        if (solicitudDTO.getIdEmpresa() != null) {
-            Empresa empresa = empresaRepository.findById(solicitudDTO.getIdEmpresa())
-                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
-            solicitud.setEmpresa(empresa);
-        } else {
-            solicitud.setNombreEmpresa(solicitudDTO.getNombreEmpresa());
-            solicitud.setRucEmpresa(solicitudDTO.getRucEmpresa());
-            solicitud.setDireccionEmpresa(solicitudDTO.getDireccionEmpresa());
-            solicitud.setTelefonoEmpresa(solicitudDTO.getTelefonoEmpresa());
-            solicitud.setCorreoEmpresa(solicitudDTO.getCorreoEmpresa());
+        // Validar y asignar empresa
+        if (solicitudDTO.getEmpresa() == null || solicitudDTO.getEmpresa().getId() == null) {
+            throw new RuntimeException("Debe seleccionar una empresa válida.");
         }
+        Empresa empresa = empresaRepository.findById(solicitudDTO.getEmpresa().getId())
+                .orElseThrow(() -> new RuntimeException("Empresa no encontrada: " + solicitudDTO.getEmpresa().getId()));
+        solicitud.setEmpresa(empresa);
 
-        if (solicitudDTO.getIdLineaCarrera() != null) {
-            Linea linea = lineaRepository.findById(solicitudDTO.getIdLineaCarrera())
-                    .orElseThrow(() -> new RuntimeException("Línea de carrera no encontrada"));
-            solicitud.setLineaCarrera(linea);
+        // Validar y asignar línea de carrera
+        if (solicitudDTO.getLineaCarrera() == null || solicitudDTO.getLineaCarrera().getId() == null) {
+            throw new RuntimeException("Debe seleccionar una línea de carrera válida.");
         }
+        Linea linea = lineaRepository.findById(solicitudDTO.getLineaCarrera().getId())
+                .orElseThrow(() -> new RuntimeException("Línea de carrera no encontrada: " + solicitudDTO.getLineaCarrera().getId()));
+        solicitud.setLineaCarrera(linea);
 
-        solicitud.setFechaCreacion(LocalDateTime.now());
+        // Establecer estado inicial y guardar la solicitud
         solicitud.setEstado("pendiente");
-
         solicitudRepository.save(solicitud);
+        logger.info("Solicitud guardada con ID: {}", solicitud.getId());
     }
 
     @Override
     public List<SolicitudDto> listarSolicitudes() {
-        List<Solicitud> solicitudes = solicitudRepository.findAll();
-        return solicitudes.stream().map(solicitud -> {
-            SolicitudDto dto = new SolicitudDto();
+        // Obtener todas las solicitudes de la base de datos y convertirlas a DTO
+        return solicitudRepository.findAll().stream()
+                .map(this::convertirEntidadADto)
+                .collect(Collectors.toList());
+    }
 
-            // Configurar los datos del estudiante
-            SolicitudDto.EstudianteDto estudianteDto = new SolicitudDto.EstudianteDto();
-            estudianteDto.setNombre(solicitud.getEstudiante().getPersona().getNombre());
-            estudianteDto.setCodigo(solicitud.getEstudiante().getCodigo());
-            estudianteDto.setDni(solicitud.getEstudiante().getPersona().getDni());
-            estudianteDto.setCorreo(solicitud.getEstudiante().getPersona().getEmail());
-            // Puedes agregar el teléfono aquí desde otra fuente, si es necesario
-            dto.setEstudiante(estudianteDto);
+    @Override
+    public List<SolicitudDto> listarSolicitudesPorEstudiante(Long estudianteId) {
+        // Filtrar solicitudes por estudiante
+        return solicitudRepository.findByEstudianteId(estudianteId).stream()
+                .map(this::convertirEntidadADto)
+                .collect(Collectors.toList());
+    }
 
-            // Configurar los datos de la empresa
-            dto.setNombreEmpresa(
-                solicitud.getNombreEmpresa() != null ?
-                solicitud.getNombreEmpresa() :
-                solicitud.getEmpresa().getRazonSocial()
-            );
-            dto.setRucEmpresa(solicitud.getRucEmpresa());
+    private SolicitudDto convertirEntidadADto(Solicitud solicitud) {
+        // Crear DTO de Solicitud
+        SolicitudDto dto = new SolicitudDto();
 
-            // Configurar el estado de la solicitud
-            dto.setEstado(solicitud.getEstado());
+        // Mapear datos del estudiante
+        Persona persona = solicitud.getEstudiante().getPersona();
+        SolicitudDto.EstudianteDTO estudianteDto = new SolicitudDto.EstudianteDTO();
+        estudianteDto.setNombre(persona.getNombre());
+        estudianteDto.setApellido(persona.getApellido());
+        estudianteDto.setCodigo(solicitud.getEstudiante().getCodigo());
+        estudianteDto.setDni(persona.getDni());
+        estudianteDto.setTelefono(persona.getTelefono());
+        estudianteDto.setCorreo(persona.getEmail());
+        dto.setEstudiante(estudianteDto);
 
-            return dto;
-        }).collect(Collectors.toList());
+        // Mapear datos completos de la empresa
+        if (solicitud.getEmpresa() != null) {
+            dto.setEmpresa(convertirEmpresaADto(solicitud.getEmpresa()));
+        }
+
+        // Mapear datos completos de la línea de carrera
+        if (solicitud.getLineaCarrera() != null) {
+            dto.setLineaCarrera(convertirLineaADto(solicitud.getLineaCarrera()));
+        }
+
+        // Mapear otros datos de la solicitud
+        dto.setEstado(solicitud.getEstado());
+        dto.setId(solicitud.getId());
+        dto.setFechaCreacion(solicitud.getFechaCreacion());
+
+        return dto;
+    }
+
+    private SolicitudDto.EmpresaDTO convertirEmpresaADto(Empresa empresa) {
+        SolicitudDto.EmpresaDTO empresaDto = new SolicitudDto.EmpresaDTO();
+        empresaDto.setId(empresa.getId());
+        empresaDto.setRazonSocial(empresa.getRazonSocial());
+        empresaDto.setDireccion(empresa.getDireccion());
+        empresaDto.setEmail(empresa.getEmail());
+        empresaDto.setTelefono(empresa.getTelefono());
+        return empresaDto;
+    }
+
+    private SolicitudDto.LineaCarreraDTO convertirLineaADto(Linea linea) {
+        SolicitudDto.LineaCarreraDTO lineaDto = new SolicitudDto.LineaCarreraDTO();
+        lineaDto.setId(linea.getId());
+        lineaDto.setNombre(linea.getNombre());
+        return lineaDto;
     }
 }

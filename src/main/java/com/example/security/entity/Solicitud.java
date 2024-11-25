@@ -1,5 +1,6 @@
 package com.example.security.entity;
 
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -9,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,41 +25,35 @@ import lombok.Setter;
 @Table(name = "solicitud")
 public class Solicitud {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	 @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_estudiante", nullable = false)
-    private Estudiante estudiante;
+	    // Relación con Estudiante
+	    @ManyToOne
+	    @JoinColumn(name = "id_estudiante", nullable = false)
+	    private Estudiante estudiante;
 
-    @ManyToOne
-    @JoinColumn(name = "id_empresa", nullable = true)
-    private Empresa empresa;  // Puede ser nulo si el estudiante no seleccionó una empresa preexistente
+	    // Relación con Empresa
+	    @ManyToOne
+	    @JoinColumn(name = "id_empresa", nullable = true)
+	    private Empresa empresa;
 
-    @ManyToOne
-    @JoinColumn(name = "id_linea_carrera", nullable = true)
-    private Linea lineaCarrera;  // Puede ser nulo si no seleccionó una línea de carrera preexistente
+	    // Relación con Línea de Carrera
+	    @ManyToOne
+	    @JoinColumn(name = "id_linea", nullable = true)
+	    private Linea lineaCarrera;
 
-    // Datos adicionales de la empresa si es una solicitud para una nueva empresa
-    @Column(name = "nombre_empresa", length = 100)
-    private String nombreEmpresa;
+	    // Estado de la solicitud (enum para consistencia)
+	    @Column(name = "estado", length = 20, nullable = false)
+	    private String estado = "PENDIENTE"; // Ejemplo de estado inicial
 
-    @Column(name = "ruc_empresa", length = 20)
-    private String rucEmpresa;
+	    // Fecha de creación
+	    @Column(name = "fecha_creacion", nullable = false)
+	    private LocalDateTime fechaCreacion;
 
-    @Column(name = "direccion_empresa", length = 100)
-    private String direccionEmpresa;
-
-    @Column(name = "telefono_empresa", length = 20)
-    private String telefonoEmpresa;
-
-    @Column(name = "correo_empresa", length = 100)
-    private String correoEmpresa;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @Column(name = "estado", length = 20, nullable = false)
-    private String estado = "pendiente";  // Estado inicial de la solicitud
+	    @PrePersist
+	    protected void onCreate() {
+	        this.fechaCreacion = LocalDateTime.now();
+	    }
 }

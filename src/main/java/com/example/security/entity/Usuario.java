@@ -43,7 +43,7 @@ public class Usuario {
 	    private List<Usuario_Rol> usuarioRoles;
 	 
 
-	    @ManyToOne
+	    @OneToOne
 	    @JoinColumn(name = "id_persona", referencedColumnName = "id_persona", nullable = false)
 	    private Persona persona;
 	}

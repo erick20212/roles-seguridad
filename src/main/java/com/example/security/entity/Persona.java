@@ -26,13 +26,16 @@ public class Persona {
     @Column(name="email", length = 100, nullable = false)
     private String email;
 
-    @Column(name="DNI", length = 50, nullable = false)
+    @Column(name="dni", length = 50, nullable = false)
     private String dni;
+    
+    @Column(name = "telefono", length = 20, nullable = true) // Agrega el atributo si falta
+    private String telefono;
 
     @Column(length = 20, nullable = false)
     private String estado;
 
-    @OneToMany(mappedBy = "persona", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Usuario> usuarios;
+    private Usuario usuarios;
 }
