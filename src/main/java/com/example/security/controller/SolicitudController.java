@@ -1,6 +1,8 @@
 package com.example.security.controller;
 
 import com.example.security.dto.SolicitudDto;
+import com.example.security.entity.Solicitud;
+import com.example.security.repository.SolicitudRepository;
 import com.example.security.service.SolicitudService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +26,8 @@ public class SolicitudController {
 
 	    @Autowired
 	    private SolicitudService solicitudService;
+	    
+	   
 
 	    /**
 	     * Obtener datos iniciales (estudiante, empresas, líneas de carrera) y lista de solicitudes.
@@ -46,6 +51,19 @@ public class SolicitudController {
 
 	        } catch (Exception e) {
 	            logger.error("Error al obtener datos iniciales y solicitudes: {}", e.getMessage(), e);
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	        }
+	    }
+
+
+	    @GetMapping("/mis-solicitudes")
+	    public ResponseEntity<List<SolicitudDto>> listarSolicitudesDelEstudianteAutenticado() {
+	        logger.info("Listando solicitudes del estudiante autenticado...");
+	        try {
+	            List<SolicitudDto> solicitudes = solicitudService.listarSolicitudesDelEstudianteAutenticado();
+	            return ResponseEntity.ok(solicitudes);
+	        } catch (Exception e) {
+	            logger.error("Error al listar solicitudes del estudiante autenticado: {}", e.getMessage(), e);
 	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	        }
 	    }
@@ -79,6 +97,19 @@ public class SolicitudController {
 	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno del servidor."));
 	        }
 	    }
+	    @GetMapping("/estudiante/{estudianteId}")
+	    public ResponseEntity<List<SolicitudDto>> listarSolicitudesPorEstudiante(@PathVariable Long estudianteId) {
+	        try {
+	            List<SolicitudDto> solicitudes = solicitudService.listarSolicitudesPorEstudiante(estudianteId);
+	            if (solicitudes.isEmpty()) {
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	            }
+	            return ResponseEntity.ok(solicitudes);
+	        } catch (Exception e) {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                    .body(null);
+	        }
+	    }
 	    /**
 	     * Listar todas las solicitudes (para coordinador).
 	     */
@@ -94,4 +125,27 @@ public class SolicitudController {
 	        }
 	    }
 
-	}
+	    @PutMapping("/{solicitudId}/estado")
+	    public ResponseEntity<Map<String, String>> cambiarEstadoSolicitud(
+	            @PathVariable Long solicitudId,
+	            @RequestParam String nuevoEstado) {
+	        logger.info("Actualizando estado de la solicitud con ID {} a {}", solicitudId, nuevoEstado);
+	        try {
+	            solicitudService.cambiarEstadoSolicitud(solicitudId, nuevoEstado);
+
+	            Map<String, String> response = new HashMap<>();
+	            response.put("message", "Estado de la solicitud actualizado a: " + nuevoEstado);
+	            return ResponseEntity.ok(response);
+	        } catch (IllegalArgumentException e) {
+	            logger.error("Error de validación: {}", e.getMessage());
+	            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+	        } catch (RuntimeException e) {
+	            logger.error("Error al actualizar estado de la solicitud: {}", e.getMessage());
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+	        } catch (Exception e) {
+	            logger.error("Error inesperado: {}", e.getMessage());
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                    .body(Map.of("error", "Ocurrió un error interno al procesar la solicitud."));
+	        }
+	    }
+}
