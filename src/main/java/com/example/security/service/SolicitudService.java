@@ -11,5 +11,7 @@ public interface SolicitudService {
 	    List<SolicitudDto> listarSolicitudesPorEstudiante(Long estudianteId);
 	    List<SolicitudDto> listarSolicitudesDelEstudianteAutenticado();// Nueva funcionalidad
 	    void cambiarEstadoSolicitud(Long solicitudId, String nuevoEstado);
+	    
+	    List<SolicitudDto> listarSolicitudesAprobadas();
 }
     

@@ -226,4 +226,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 
         logger.info("Estado actualizado correctamente para la solicitud con ID {}", solicitudId);
     }
+
+    @Override
+    public List<SolicitudDto> listarSolicitudesAprobadas() {
+        logger.info("Obteniendo solicitudes aprobadas desde la base de datos...");
+        return solicitudRepository.findSolicitudesAprobadas().stream()
+            .map(this::convertirEntidadADto)
+            .toList();
+    }
 }
