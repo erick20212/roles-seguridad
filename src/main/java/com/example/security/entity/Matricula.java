@@ -19,9 +19,11 @@ public class Matricula {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_matricula")
     private long id;
-    @Temporal(TemporalType.TIMESTAMP)  // O TemporalType.DATE para solo la fecha
+
+    @Temporal(TemporalType.DATE)  // Usamos TemporalType.DATE para solo la fecha (sin la hora)
     @Column(name = "fecha_matricula")
     private Date fecha_matricula;
+
     @Column(name = "estado")
     private String estado;
 

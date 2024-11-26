@@ -23,17 +23,17 @@ public class PersonaUsuarioController {
      * @param personaUsuarioDTO DTO que contiene los datos de la persona y el usuario.
      * @return ResponseEntity con el resultado de la operación.
      */
-    @PostMapping("/crear")
-    public ResponseEntity<String> crearPersonaYUsuario(@Valid @RequestBody PersonaUsuarioDTO personaUsuarioDTO) {
-        System.out.println("Datos recibidos: " + personaUsuarioDTO);
-        try {
-            personaUsuarioService.crearPersonaYUsuario(personaUsuarioDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Persona y usuario creados con éxito.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al crear persona y usuario: " + e.getMessage());
+        @PostMapping("/crear")
+        public ResponseEntity<String> crearPersonaYUsuario(@Valid @RequestBody PersonaUsuarioDTO personaUsuarioDTO) {
+            System.out.println("Datos recibidos: " + personaUsuarioDTO);
+            try {
+                personaUsuarioService.crearPersonaYUsuario(personaUsuarioDTO);
+                return ResponseEntity.status(HttpStatus.CREATED).body("Persona y usuario creados con éxito.");
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error al crear persona y usuario: " + e.getMessage());
+            }
         }
-    }
 }

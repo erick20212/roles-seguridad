@@ -14,5 +14,6 @@ public interface EstudianteRepository extends JpaRepository<Estudiante,Long>{
 
     // Buscar un estudiante por su código único
     Optional<Estudiante> findByCodigo(String codigo);
-    
+    boolean existsByCodigo(String codigo);
+
 }
