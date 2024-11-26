@@ -157,8 +157,8 @@ public class ExcelService {
             return 1;
         }
         switch (ciclo) {
-            case 8: return 2;
-            case 10: return 3;
+            case 8: return 21;
+            case 10: return 22;
             default: return 1;
         }
     }
