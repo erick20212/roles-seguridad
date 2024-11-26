@@ -57,7 +57,9 @@ public class SecurityConfig {
                 // Rutas protegidas
                 authorize.requestMatchers(
                         "/api/solicitudes/**",
-                        "/api/solicitudes/list**" // Proteger solicitudes
+                        "/api/solicitudes/list**",
+                        "/api/solicitudes/aprobadas**"
+                        // Proteger solicitudes
                 ).authenticated();
 
                 // Todas las demás rutas requieren autenticación

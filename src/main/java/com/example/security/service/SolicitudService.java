@@ -8,6 +8,10 @@ public interface SolicitudService {
 	 SolicitudDto obtenerDatosEstudianteConEmpresasYLineas();
 	    void guardarSolicitud(SolicitudDto solicitudDTO);
 	    List<SolicitudDto> listarSolicitudes();
-	    List<SolicitudDto> listarSolicitudesPorEstudiante(Long estudianteId); // Nueva funcionalidad
+	    List<SolicitudDto> listarSolicitudesPorEstudiante(Long estudianteId);
+	    List<SolicitudDto> listarSolicitudesDelEstudianteAutenticado();// Nueva funcionalidad
+	    void cambiarEstadoSolicitud(Long solicitudId, String nuevoEstado);
+	    
+	    List<SolicitudDto> listarSolicitudesAprobadas();
 }
     

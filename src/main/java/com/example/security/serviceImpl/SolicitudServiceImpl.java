@@ -5,6 +5,8 @@ import com.example.security.entity.*;
 import com.example.security.repository.*;
 import com.example.security.service.SolicitudService;
 
+import jakarta.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,5 +182,56 @@ public class SolicitudServiceImpl implements SolicitudService {
         lineaDto.setId(linea.getId());
         lineaDto.setNombre(linea.getNombre());
         return lineaDto;
+    }
+
+    @Override
+    public List<SolicitudDto> listarSolicitudesDelEstudianteAutenticado() {
+        // Obtener el nombre de usuario del estudiante autenticado
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        logger.info("Obteniendo solicitudes para el usuario autenticado: {}", username);
+
+        // Buscar el usuario por su nombre de usuario
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
+        // Obtener la persona asociada al usuario
+        Persona persona = usuario.getPersona();
+        if (persona == null) {
+            throw new RuntimeException("No se encontró una persona asociada al usuario: " + username);
+        }
+
+        // Obtener el estudiante asociado a la persona
+        Estudiante estudiante = estudianteRepository.findByPersonaId(persona.getId())
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado para la persona: " + persona.getId()));
+
+        // Filtrar las solicitudes por el estudiante autenticado
+        return solicitudRepository.findByEstudianteId(estudiante.getId()).stream()
+                .map(this::convertirEntidadADto)
+                .collect(Collectors.toList());
+    }
+    @Override
+    @Transactional
+    public void cambiarEstadoSolicitud(Long solicitudId, String nuevoEstado) {
+        logger.info("Intentando cambiar estado de solicitud con ID {} a {}", solicitudId, nuevoEstado);
+
+        if (!nuevoEstado.equalsIgnoreCase("aceptado") && !nuevoEstado.equalsIgnoreCase("rechazado")) {
+            throw new IllegalArgumentException("Estado no válido: " + nuevoEstado);
+        }
+
+        Solicitud solicitud = solicitudRepository.findById(solicitudId)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + solicitudId));
+
+        solicitud.setEstado(nuevoEstado);
+        solicitudRepository.save(solicitud);
+
+        logger.info("Estado actualizado correctamente para la solicitud con ID {}", solicitudId);
+    }
+
+    @Override
+    public List<SolicitudDto> listarSolicitudesAprobadas() {
+        logger.info("Obteniendo solicitudes aprobadas desde la base de datos...");
+        return solicitudRepository.findSolicitudesAprobadas().stream()
+            .map(this::convertirEntidadADto)
+            .toList();
     }
 }
