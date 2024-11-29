@@ -59,7 +59,8 @@ public class SecurityConfig {
                 authorize.requestMatchers(
                         "/api/solicitudes/**",
                         "/api/solicitudes/list**",
-                        "/api/solicitudes/aprobadas**"
+                        "/api/solicitudes/aprobadas**",
+                        "/api/solicitudes/paginadas"
                         // Proteger solicitudes
                 ).authenticated();
 

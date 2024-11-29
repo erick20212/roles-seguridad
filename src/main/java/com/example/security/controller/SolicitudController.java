@@ -7,6 +7,9 @@ import com.example.security.service.SolicitudService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -146,22 +149,5 @@ public class SolicitudController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("error", "Ocurrió un error interno al procesar la solicitud."));
 		}
-	}
-
-	@GetMapping("/aprobadas")
-	public ResponseEntity<List<SolicitudDto>> listarSolicitudesAprobadas() {
-	    logger.info("Listando solicitudes aprobadas...");
-	    try {
-	        // Llama al servicio para obtener las solicitudes aprobadas
-	        List<SolicitudDto> solicitudesAprobadas = solicitudService.listarSolicitudesAprobadas();
-
-	        if (solicitudesAprobadas.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // Retorna 204 si no hay solicitudes
-	        }
-	        return ResponseEntity.ok(solicitudesAprobadas); // Retorna 200 con las solicitudes aprobadas
-	    } catch (Exception e) {
-	        logger.error("Error al listar solicitudes aprobadas: {}", e.getMessage(), e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Manejo de error
-	    }
 	}
 }

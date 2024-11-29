@@ -27,6 +27,9 @@ public class Detalle_Documento {
     @Column(name = "estado", length = 40, nullable = false)
     private String estado;
     
+    @Column(name = "ruta_documento", length = 500)
+    private String ruta_documento;  // Almacena la ruta del archivo
+    
     
 }
 
