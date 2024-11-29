@@ -7,7 +7,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class SecurityConfig {
 
-    private UserDetailsService userDetailsService;
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
     private JwtAuthenticationFilter authenticationFilter;
 
@@ -31,6 +29,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Deshabilitar CSRF si no es necesario
+<<<<<<< HEAD
             .cors(Customizer.withDefaults()) // Habilitar soporte para CORS
             .authorizeHttpRequests(authorize -> {
                 // Rutas públicas
@@ -68,11 +67,19 @@ public class SecurityConfig {
                 authorize.anyRequest().authenticated();
             })
             .httpBasic(Customizer.withDefaults()); // Usar autenticación básica
+=======
+                .cors(Customizer.withDefaults()) // Habilitar soporte para CORS
+                .authorizeHttpRequests(authorize -> {
+                    // Permitir todas las rutas sin autenticación
+                    authorize.requestMatchers("/**").permitAll(); // Todas las rutas y métodos HTTP son accesibles
+                })
+                .httpBasic(Customizer.withDefaults()); // Usar autenticación básica opcionalmente
+>>>>>>> ec9a1a3036ba84fc0e0eb957a01c62e25c708b3d
 
         // Configuración de manejo de excepciones
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint));
 
-        // Agregar filtro JWT
+        // Agregar filtro JWT (este filtro será ignorado porque todas las rutas son públicas)
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

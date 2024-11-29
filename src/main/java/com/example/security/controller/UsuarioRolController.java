@@ -1,8 +1,11 @@
 package com.example.security.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.example.security.repository.Usuario_Rol_Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,8 @@ import com.example.security.service.UsuarioRolService;
 public class UsuarioRolController {
 	 @Autowired
 	    private UsuarioRolService usuarioRolService;
+	 @Autowired
+	 private Usuario_Rol_Repository usuarioRolRepository;
 
 	    @GetMapping
 	    public ResponseEntity<List<Usuario_Rol>> readAll() {
@@ -58,4 +63,31 @@ public class UsuarioRolController {
 	        usuarioRolService.delete(id);
 	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	    }
+
+	@GetMapping("/roles")
+	public Map<String, Long> getRolesEstadisticas() {
+		// Usamos el repositorio de JPA para obtener los datos
+		List<Object[]> results = usuarioRolRepository.countRolesForPersons();
+
+		// Transformamos los resultados en un mapa donde la clave es el nombre del rol
+		// y el valor es la cantidad de personas en ese rol
+		return results.stream()
+				.collect(Collectors.toMap(
+						result -> getRoleNameById((Long) result[0]),  // Obtener el nombre del rol
+						result -> (Long) result[1]                    // Obtener la cantidad de personas
+				));
 	}
+
+	// Método para convertir el id del rol a su nombre
+	private String getRoleNameById(Long roleId) {
+		switch (roleId.intValue()) {
+			case 1: return "Administrador";
+			case 2: return "Supervisor";
+			case 3: return "Estudiante";
+			case 4: return "Coordinador";
+			case 21: return "Admin";
+			default: return "Sin identificar";
+		}
+	}
+
+}

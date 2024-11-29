@@ -24,10 +24,10 @@ public class Estudiante {
 	@Column(name = "id_estudiante")
 	private Long id;
 
-	@Column(name="codigo")
+	@Column(name="codigo",unique = true)
     private String codigo;
 	
-	@Column(name="estado",unique = true)
+	@Column(name="estado")
     private String estado;
 	
 	@ManyToOne
