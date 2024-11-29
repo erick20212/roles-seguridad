@@ -33,7 +33,7 @@ public class SupervisorController {
     // Obtener supervisores (Usuarios con rol de supervisor)
     @GetMapping("/listar")
     public List<Persona> listarSupervisores() {
-        // 1. Buscar los usuarios que tienen el rol de supervisor (id_rol = 4)
+        // 1. Buscar los usuarios que tienen el rol de supervisor (id_rol = 2)
         List<Usuario_Rol> usuarioRoles = usuarioRolRepository.findByRolId(2L);  // Busca por el id_rol del supervisor
 
         // 2. Obtener los usuarios y sus personas asociadas
